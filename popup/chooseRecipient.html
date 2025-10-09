@@ -17,7 +17,7 @@
       text-overflow: ellipsis;
       text-align: center;
     }
-    span {
+    #error {
       color: red;
     }
     p {
@@ -29,9 +29,10 @@
   </style>
 </head>
 <body>
-  <div id="recipients"></div>
-  <p>Hold Shift to open compose window instead of sending directly.</p>
-  <span id="error"></span>
+  <div id="configs"></div>
+  <p id="shiftInstruction">Hold Shift to open compose window instead of sending directly.</p>
+  <span id="error" class="red"></span>
+  <script src="../utils.js"></script>
   <script src="chooseRecipient.js"></script>
 </body>
 </html>

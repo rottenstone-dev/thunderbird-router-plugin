@@ -8,27 +8,43 @@
       font-family: sans-serif;
       margin: 20px;
     }
+    p {
+      margin: 5px 0;
+    }
+    .config {
+      border: 1px solid #ccc;
+      padding: 10px;
+      margin-bottom: 10px;
+    }
+    .config h3 {
+      margin-top: 0;
+    }
     textarea {
       width: 100%;
-      height: 200px;
+      height: 100px;
     }
     button {
       margin-top: 10px;
-      text-align: center;
+      margin-right: 5px;
     }
-    span {
+    .red {
       color: red;
+    }
+    .green {
+      color: green;
     }
   </style>
 </head>
 <body>
-  <h1>Configure Forwarding Addresses</h1>
-  <p>Enter the email addresses to which you want to forward messages. Add one address per line. You can also include a name with the <code>Name &lt;address&gt;</code> syntax.
-  </p>
-  <p>To add a list you created in your address book, use the list name as both name and address, e.g. <code>mylist &lt;mylist&gt;</code>.</p>
-  <textarea id="emails">example@example.com</textarea>
-  <button id="save">Save</button>
-  <span id="error"></span>
+  <h1>Forwarding Configurations</h1>
+  <p>Each configuration allows forwarding to multiple recipients with specific settings.</p>
+  <p>Recipients: Enter email addresses or mailing list names, one per line. You can also use the <code>Name &lt;address&gt;</code> syntax.</p>
+  <p><strong>Alt+Click on the toolbar button will auto-forward using the first configuration.</strong></p>
+  <div id="configs"></div>
+  <button id="addConfig" style="font-size: smaller;">+ Add Configuration</button>
+  <button id="save" style="font-weight: bold; display: block; margin: 10px auto;">Save</button>
+  <span id="error" class="red"></span>
+  <script src="utils.js"></script>
   <script src="options.js"></script>
 </body>
 </html>
