@@ -24,7 +24,12 @@ async function buildConfigsList () {
 
   if (!forwardingConfigs.length) {
     const message = document.createElement('p')
-    message.innerHTML = 'No forwarding configurations exist! <a href="#" onclick="browser.runtime.openOptionsPage(); window.close();">Create in settings</a>'
+    message.textContent = 'No forwarding configurations exist! '
+    const link = document.createElement('a')
+    link.href = '#'
+    link.onclick = () => { browser.runtime.openOptionsPage(); window.close(); }
+    link.textContent = 'Create in settings'
+    message.appendChild(link)
     document.getElementById('configs').appendChild(message)
     document.getElementById('shiftInstruction').style.display = 'none'
     return
@@ -41,7 +46,10 @@ async function buildConfigsList () {
         window.close()
       } catch (e) {
         console.error(e)
-        document.getElementById('error').innerText = `Sending message failed! ${e}`
+        const errorDiv = document.getElementById('error')
+        const redSpan = errorDiv.querySelector('span.red')
+        redSpan.textContent = `Sending message failed! ${e}`
+        errorDiv.dataset.view = 'red'
       }
     })
     document.getElementById('configs').appendChild(option)

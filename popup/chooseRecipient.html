@@ -20,6 +20,8 @@
     #error {
       color: red;
     }
+    #error span.red { display: none; }
+    #error[data-view="red"] span.red { display: revert; }
     p {
       margin: 0;
     }
@@ -31,7 +33,9 @@
 <body>
   <div id="configs"></div>
   <p id="shiftInstruction">Hold Shift to open compose window instead of sending directly.</p>
-  <span id="error" class="red"></span>
+  <div id="error" data-view="none">
+    <span class="red"></span>
+  </div>
   <script src="../utils.js"></script>
   <script src="chooseRecipient.js"></script>
 </body>

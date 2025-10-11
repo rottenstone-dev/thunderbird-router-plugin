@@ -33,6 +33,9 @@
     .green {
       color: green;
     }
+    #error span.green, #error span.red { display: none; }
+    #error[data-view="green"] span.green { display: revert; }
+    #error[data-view="red"] span.red { display: revert; }
   </style>
 </head>
 <body draggable="false">
@@ -43,7 +46,10 @@
   <div id="configs"></div>
   <button id="addConfig" style="font-size: smaller;">+ Add Configuration</button>
   <button id="save" style="font-weight: bold; display: block; margin: 10px auto;">Save</button>
-  <span id="error" class="red"></span>
+  <div id="error" data-view="none">
+    <span class="red"></span>
+    <span class="green">Saved!</span>
+  </div>
   <script src="utils.js"></script>
   <script src="options.js"></script>
 </body>

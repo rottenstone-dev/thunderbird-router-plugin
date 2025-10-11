@@ -191,15 +191,21 @@ async function saveOptions() {
       }
     }
     if (hasEmptyRecipients) {
-      document.getElementById('error').innerText = 'Some configurations have no recipients and were not saved!'
+      const errorDiv = document.getElementById('error')
+      const redSpan = errorDiv.querySelector('span.red')
+      redSpan.textContent = 'Some configurations have no recipients and were not saved!'
+      errorDiv.dataset.view = 'red'
       return
     }
     await browser.storage.local.set({ forwardingConfigs: configs })
 
-    document.getElementById('error').innerHTML = '<span class="green">Saved!</span>'
+    document.getElementById('error').dataset.view = 'green'
   } catch (e) {
     console.error(e)
-    document.getElementById('error').innerText = `Saving options failed! ${e}`
+    const errorDiv = document.getElementById('error')
+    const redSpan = errorDiv.querySelector('span.red')
+    redSpan.textContent = `Saving options failed! ${e}`
+    errorDiv.dataset.view = 'red'
   }
 }
 
@@ -209,7 +215,9 @@ async function restoreOptions() {
     const { forwardingConfigs } = await browser.storage.local.get({ forwardingConfigs: [] })
 
     const configsContainer = document.getElementById('configs')
-    configsContainer.innerHTML = ''
+    while (configsContainer.firstChild) {
+      configsContainer.removeChild(configsContainer.firstChild)
+    }
     for (const config of forwardingConfigs) {
       configsContainer.appendChild(createConfigElement(config))
     }
@@ -218,7 +226,10 @@ async function restoreOptions() {
     }
   } catch (e) {
     console.error(e)
-    document.getElementById('error').innerText = `Loading options failed! ${e}`
+    const errorDiv = document.getElementById('error')
+    const redSpan = errorDiv.querySelector('span.red')
+    redSpan.textContent = `Loading options failed! ${e}`
+    errorDiv.dataset.view = 'red'
   }
 }
 
