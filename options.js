@@ -150,14 +150,25 @@ function createConfigElement(config = {}) {
   div.appendChild(forwardTypeLabel)
   div.appendChild(document.createElement('br'))
 
-  const trashLabel = document.createElement('label')
-  trashLabel.textContent = 'Trash after forwarding: '
-  const trashCheckbox = document.createElement('input')
-  trashCheckbox.type = 'checkbox'
-  trashCheckbox.name = 'trashAfter'
-  trashCheckbox.checked = config.trashAfter || false
-  trashLabel.appendChild(trashCheckbox)
-  div.appendChild(trashLabel)
+  const actionAfterLabel = document.createElement('label')
+  actionAfterLabel.textContent = 'Action after forwarding: '
+  const actionAfterSelect = document.createElement('select')
+  actionAfterSelect.name = 'actionAfter'
+  const actionOptions = [
+    { value: 'none', label: 'Do nothing' },
+    { value: 'archive', label: 'Archive' },
+    { value: 'trash', label: 'Trash' },
+    { value: 'delete', label: 'Delete permanently' }
+  ]
+  for (const optionDef of actionOptions) {
+    const option = document.createElement('option')
+    option.value = optionDef.value
+    option.textContent = optionDef.label
+    if (config.actionAfter === optionDef.value) option.selected = true
+    actionAfterSelect.appendChild(option)
+  }
+  actionAfterLabel.appendChild(actionAfterSelect)
+  div.appendChild(actionAfterLabel)
   div.appendChild(document.createElement('br'))
 
   const removeButton = document.createElement('button')
@@ -182,10 +193,10 @@ async function saveOptions() {
       const fromSelect = configDiv.querySelector('select[name="fromIdentity"]')
       const fromIdentity = fromSelect ? fromSelect.value : 'default'
       const forwardType = configDiv.querySelector('input[name*="forwardType_"][value="attachment"]:checked') ? 'attachment' : 'inline'
-      const trashCheckbox = configDiv.querySelector('input[name="trashAfter"]')
-      const trashAfter = trashCheckbox ? trashCheckbox.checked : false
+      const actionAfterSelect = configDiv.querySelector('select[name="actionAfter"]')
+      const actionAfter = actionAfterSelect ? actionAfterSelect.value : 'none'
       if (recipients.length) {
-        configs.push({ name, recipients, fromIdentity, forwardType, trashAfter })
+        configs.push({ name, recipients, fromIdentity, forwardType, actionAfter })
       } else {
         hasEmptyRecipients = true
       }
@@ -213,15 +224,19 @@ async function restoreOptions() {
   try {
     await loadIdentities()
     const { forwardingConfigs } = await browser.storage.local.get({ forwardingConfigs: [] })
+    const { migrated, didMigrate } = migrateV2ToV2_1Configs(forwardingConfigs)
+    if (didMigrate) {
+      await browser.storage.local.set({ forwardingConfigs: migrated })
+    }
 
     const configsContainer = document.getElementById('configs')
     while (configsContainer.firstChild) {
       configsContainer.removeChild(configsContainer.firstChild)
     }
-    for (const config of forwardingConfigs) {
+    for (const config of migrated) {
       configsContainer.appendChild(createConfigElement(config))
     }
-    if (!forwardingConfigs.length) {
+    if (!migrated.length) {
       configsContainer.appendChild(createConfigElement())
     }
   } catch (e) {

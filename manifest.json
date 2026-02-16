@@ -1,13 +1,14 @@
 {
   "manifest_version": 2,
   "name": "One-Click Forward",
-  "version": "2.0",
+  "version": "2.1",
   "author": "David Trapp",
   "description": "Forward emails directly through a dropdown of predefined recipients",
   "permissions": [
     "accountsRead",
     "messagesRead",
     "messagesMove",
+    "messagesDelete",
     "compose",
     "compose.send",
     "storage",

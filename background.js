@@ -2,9 +2,14 @@
 (async () => {
   const { forwardingConfigs, forwardingAddresses } = await browser.storage.local.get({ forwardingConfigs: [], forwardingAddresses: [] })
   if (!forwardingConfigs.length && forwardingAddresses.length) {
-    const migrated = migrateOldConfigs(forwardingAddresses)
+    const migrated = migrateV1ToV2Configs(forwardingAddresses)
     await browser.storage.local.set({ forwardingConfigs: migrated })
     await browser.storage.local.remove('forwardingAddresses')
+    return
+  }
+  const { migrated, didMigrate } = migrateV2ToV2_1Configs(forwardingConfigs)
+  if (didMigrate) {
+    await browser.storage.local.set({ forwardingConfigs: migrated })
   }
 })()
 
@@ -52,7 +57,51 @@ async function getTrashFolderId(accountId) {
   return null
 }
 
+async function getArchiveFolderId(accountId) {
+  const account = await browser.accounts.get(accountId)
+  let archiveFolder = account.folders.find(f => f.type === 'archive' || f.type === 'archives')
+  if (archiveFolder) return archiveFolder.id
+
+  const accounts = await browser.accounts.list()
+  const localAccount = accounts.find(acc => acc.type === 'none')
+  if (localAccount) {
+    archiveFolder = localAccount.folders.find(f => f.type === 'archive' || f.type === 'archives')
+    if (archiveFolder) return archiveFolder.id
+  }
+
+  return null
+}
+
+async function applyPostForwardAction(actionAfter, messageId, accountId) {
+  if (actionAfter === 'archive') {
+    if (browser.messages.archive) {
+      await browser.messages.archive([messageId])
+      return
+    }
+    const archiveId = await getArchiveFolderId(accountId)
+    if (archiveId) {
+      await browser.messages.move([messageId], archiveId)
+    }
+    return
+  }
+
+  if (actionAfter === 'trash') {
+    const trashId = await getTrashFolderId(accountId)
+    if (trashId) {
+      await browser.messages.move([messageId], trashId)
+    }
+    return
+  }
+
+  if (actionAfter === 'delete') {
+    if (browser.messages.delete) {
+      await browser.messages.delete([messageId], true)
+    }
+  }
+}
+
 async function performForward(config, compose = false) {
+  config = migrateV2ToV2_1Config(config)
   const messageId = await getMessageId()
   const identityId = await getIdentityIdFromConfig(messageId, config.fromIdentity)
 
@@ -75,13 +124,8 @@ async function performForward(config, compose = false) {
     await new Promise(resolve => setTimeout(resolve, 1500)) // Fails if called too quickly after beginForward!
     console.log('Sent:', await browser.compose.sendMessage(tab.id))
 
-    if (config.trashAfter) {
-      const messageHeader = await browser.messages.get(messageId)
-      const trashId = await getTrashFolderId(messageHeader.folder.accountId)
-      if (trashId) {
-        await browser.messages.move([messageId], trashId)
-      }
-    }
+    const messageHeader = await browser.messages.get(messageId)
+    await applyPostForwardAction(config.actionAfter, messageId, messageHeader.folder.accountId)
   }
 }
 
